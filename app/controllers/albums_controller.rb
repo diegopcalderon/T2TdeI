@@ -2,13 +2,13 @@ class AlbumsController < ApplicationController
   protect_from_forgery with: :null_session
 
   def create_album
-    if params[:name] != "" && params[:genre] != ""
+    if params[:name].present? && params[:genre].present?
       artist_id = params[:id]
       artistas = Artist.all.ids
       if artistas.include?(artist_id)
         name_album = params[:name].strip
         genre_album = params[:genre].strip
-        id = Base64.encode64(name_album).strip
+        id = Base64.encode64("#{name_album}:#{params[:id]}").strip[0..21]
         albumnes = Album.all.ids
         if albumnes.include?(id)
           render json: Album.find(id), status: 409
@@ -18,19 +18,19 @@ class AlbumsController < ApplicationController
           album.artist_id = artist_id
           album.name = name_album
           album.genre = genre_album
-          album.artist_album = "artists/" + artist_id
-          album.tracks_album = "albums/" + id + "/tracks"
-          album.self_album = "albums/" + id
+          album.artist_album = "https://dbcaldet2.herokuapp.com/artists/" + artist_id
+          album.tracks_album = "https://dbcaldet2.herokuapp.com/albums/" + id + "/tracks"
+          album.self_album = "https://dbcaldet2.herokuapp.com/albums/" + id
         
           if album.save
-            render json: album, status: 201
+            return render json: album, status: 201
           end
         end
       else
-        render json: {}, status: 422
+        return render json: {}, status: 422
       end
     else
-      render json: {}, status: 400
+      return render json: {}, status: 400
     end
   end 
 
@@ -72,14 +72,13 @@ class AlbumsController < ApplicationController
   end
 
   def delete
-    albumnes = Album.all.ids
-    if albumnes.include?(params[:id])
-      album_delete = Album.find(params[:id])
-      album_delete.destroy
+    track = Song.find_by id: params[:id]
+    if track.present?
+      track.destroy
       render json: {}, status: 204
     else
       render json: {}, status: 404
     end
-  end 
+  end
 
 end

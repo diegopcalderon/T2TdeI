@@ -3,19 +3,18 @@ class ArtistsController < ApplicationController
   protect_from_forgery with: :null_session
 
   def create_artist
-    puts("-----------\n")
-    puts(params[:name])
-    puts("-----------\n")
-    if params[:name] == "" || params[:age] == ""
-      puts("error\n")
+    
+    
+    if params[:name].blank? || params[:age].blank?
+     
       return render json: [], status: 400
     else
-      puts("2222\n")
+      
       name_artist = params[:name].strip
       age_artist = params[:age].to_i
-      id_artist= Base64.encode64(name_artist).strip
+      id_artist= Base64.encode64(name_artist).strip[0..21]
       artistas = Artist.all.ids
-      puts (artistas)
+     
       if artistas.include?(id_artist)
         render json: Artist.find(id_artist), status: 409
       else
@@ -23,11 +22,11 @@ class ArtistsController < ApplicationController
         artist.name = name_artist
         artist.id = id_artist
         artist.age = age_artist
-        artist.self_artst = "artists/" + id_artist
-        artist.tracks_artist = "artists/" + id_artist + "/tracks"
-        artist.albums_artist = "artists/" + id_artist + "/albums"
+        artist.self_artst = "https://dbcaldet2.herokuapp.com/artists/" + id_artist
+        artist.tracks_artist = "https://dbcaldet2.herokuapp.com/artists/" + id_artist + "/tracks"
+        artist.albums_artist = "https://dbcaldet2.herokuapp.com/artists/" + id_artist + "/albums"
         if artist.save
-          render json: artist, status: 201
+         return render json: artist, status: 201
         end
       end
     end
@@ -36,7 +35,7 @@ class ArtistsController < ApplicationController
   def index
     artists = Artist.all
     codigo = Base64.encode64('La Santa')
-    puts(codigo)
+  
     #QmFkIEJ1bm55
     # album WUhMUU1ETEc=
     render json: artists, status: 200
